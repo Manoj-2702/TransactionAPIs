@@ -4,7 +4,9 @@ from fastapi_utils.tasks import repeat_every
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from .utils.utils import read_markdown_file
+
 readme_content = read_markdown_file("README.md")
+
 app = FastAPI(
     title="Snacc MINT",
     description=(lambda: readme_content if isinstance(readme_content, str) else "")(),

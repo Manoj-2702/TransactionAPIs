@@ -23,3 +23,44 @@ def get_db():
         if conn:
             conn.cursor().close()
             pool.putconn(conn)
+
+def create_tables():
+    conn = None
+    try:
+        conn = pool.getconn()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS Keys (
+                key VARCHAR(255)
+            );
+        """)
+        
+        conn.commit()
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"An error occurred: {e}")
+    finally:
+        if conn:
+            cur.close()
+            pool.putconn(conn)
+            
+            
+            
+def verify_key(key: str):
+    conn = None
+    try:
+        conn = pool.getconn()
+        cur = conn.cursor()
+        cur.execute("SELECT key FROM Keys WHERE key = %s", (key,))
+        key_exists = cur.fetchone() is not None
+        return key_exists
+    except Exception as e:
+        print(f"An error occurred while verifying key: {e}")
+        return False
+    finally:
+        if conn:
+            cur.close()
+            pool.putconn(conn)
+            
