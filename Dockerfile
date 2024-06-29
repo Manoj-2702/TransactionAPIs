@@ -1,37 +1,22 @@
-# Dockerfile
+# Use the official Python image from the DockerHub
+FROM python:3.12.3-slim
 
-# Use an official Python runtime as a parent image (multi-stage builds)
-FROM python:3.11-slim
-# Set the working directory in the builder stage
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy just the requirements.txt initially to leverage Docker cache
-COPY requirements.txt .
+# Copy the current directory contents into the container at /app
+COPY . /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the local code to the container's workspace
-COPY . /app
+# Expose ports for FastAPI and Streamlit
+EXPOSE 8000
+EXPOSE 8501
 
-# Create a non-root user and set ownership of the app directory
-RUN useradd --create-home --shell /bin/bash vscode \
-    && chown -R vscode:vscode /app
+# Start FastAPI and Streamlit using a script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Switch to the non-root user
-USER vscode
-
-# Set environment variables
-ARG DATABASE_URL
-
-ENV TERM=xterm-256color
-ENV FAST_APP=service:app
-ENV HOST 0.0.0.0
-ENV PORT=8000
-ENV DATABASE_URL=$DATABASE_URL
-
-# Expose the specified port
-EXPOSE $PORT
-
-# Command to run the FastAPI application
-CMD ["uvicorn", "src.server.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Define the command to run the start script
+CMD ["/start.sh"]

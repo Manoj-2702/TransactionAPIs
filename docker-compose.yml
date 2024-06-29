@@ -1,23 +1,36 @@
-version: "3.3"
+version: '3.8'
 
 services:
-  server:
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    hostname: MINT
-    container_name: flagright
-      # command: uvicorn src.server.app:app --host 0.0.0.0 --port 8000
-    command: sleep infinity
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-    ports:
-      - "8000:8000"
-    networks:
-      - dev
+  web:
+    build: .
+    container_name: flagrighttask_web
     volumes:
       - .:/app
+    ports:
+      - "8000:8000"
+      - "8501:8501"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - PGDATABASE=${PGDATABASE}
+      - PGHOST=${PGHOST}
+      - PGPORT=${PGPORT}
+      - PGUSER=${PGUSER}
+      - PGPASSWORD=${PGPASSWORD}
+      - API_KEY=${API_KEY}
+    depends_on:
+      - db
 
-networks:
-  dev:
-    driver: bridge
+  db:
+    image: postgres:13
+    container_name: flagrighttask_db
+    environment:
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_DB: ${PGDATABASE}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
