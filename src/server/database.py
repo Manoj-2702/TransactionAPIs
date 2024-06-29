@@ -299,5 +299,68 @@ def verify_key(key: str):
             cur.close()
             pool.putconn(conn)
 
+
+def get_transaction_summary(start_date: datetime, end_date: datetime) -> dict:
+    conn = None
+    try:
+        conn = pool.getconn()
+        cur = conn.cursor()
+
+        query = """
+            SELECT type, COUNT(*) AS count, SUM(origin_amount) AS total_amount
+            FROM Transactions
+            WHERE timestamp >= %s AND timestamp <= %s
+            GROUP BY type
+        """
+        params = [start_date, end_date]
+
+        cur.execute(query, tuple(params))
+        result = cur.fetchall()
+
+        summary = [{"type": row[0], "count": row[1], "total_amount": row[2]} for row in result]
+
+        return summary
+
+    except Exception as e:
+        print(f"An error occurred while fetching transaction summary: {e}")
+        return []
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            pool.putconn(conn)
+
+def get_total_transaction_amount(start_date: datetime, end_date: datetime) -> float:
+    conn = None
+    try:
+        conn = pool.getconn()
+        cur = conn.cursor()
+
+        query = """
+            SELECT SUM(origin_amount)
+            FROM Transactions
+            WHERE timestamp >= %s AND timestamp <= %s
+        """
+        params = [start_date, end_date]
+
+        cur.execute(query, tuple(params))
+        result = cur.fetchone()
+
+        total_amount = result[0] if result[0] is not None else 0.0
+
+        return total_amount
+
+    except Exception as e:
+        print(f"An error occurred while fetching total transaction amount: {e}")
+        return 0.0
+    finally:
+        if cur:
+            cur.close()
+        if conn:
+            pool.putconn(conn)
+
+
+
+
 # Initialize tables
 create_tables()
