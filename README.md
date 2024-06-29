@@ -32,6 +32,15 @@ The Transaction Management System is a comprehensive platform designed to handle
 - Python 3.8+
 - PostgreSQL
 
+
+### Some Screenshots
+![alt text](image.png)
+
+![alt text](image-1.png)
+
+![alt text](image-2.png)
+
+![alt text](image-3.png)
 ### Installation
 
 1. **Clone the repository:**
