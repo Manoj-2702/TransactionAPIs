@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from server.models.transaction import TransactionType, Currency, Country, DeviceData, Tag
 
 load_dotenv()
-DATABASE_URL = os.environ["DATABASE_URL"]
+DATABASE_URL = os.getenv("DATABASE_URL")
 pool = psycopg2.pool.SimpleConnectionPool(1, 20, DATABASE_URL)
 
 
@@ -179,29 +179,35 @@ def get_transaction_by_id(transaction_id: int) -> dict:
 
 
 
-def get_transactions(transaction_id: int) -> dict:
-    conn = None
+def get_transactions(transaction_id):
+    conn = pool.getconn()
     try:
-        conn = pool.getconn()
-        cur = conn.cursor()
-
-        cur.execute("""
-            SELECT * FROM Transactions WHERE transaction_id = %s
-        """, (transaction_id,))
-
-        transaction = cur.fetchone()
-        if transaction is None:
-            return None
-        return transaction
-        
-    except:
-        print(f"An error occurred while fetching transaction: {e}")
-        return None
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM transactions WHERE transaction_id = %s", (transaction_id,))
+            row = cur.fetchone()
+            if row:
+                return {
+                    "transaction_id": row[0],
+                    "type": row[1],
+                    "timestamp": row[2],
+                    "origin_user_id": row[3],
+                    "destination_user_id": row[4],
+                    "origin_amount": row[5],
+                    "origin_currency": row[6],
+                    "origin_country": row[7],
+                    "destination_amount": row[8],
+                    "destination_currency": row[9],
+                    "destination_country": row[10],
+                    "is_fraudulent": row[11],
+                    "metadata": row[12],
+                    "origin_device_data": row[13],
+                    "destination_device_data": row[14],
+                    "tags": row[15],
+                }
     finally:
-        if cur:
-            cur.close()
-        if conn:
-            pool.putconn(conn)
+        pool.putconn(conn)
+    return None
+
 
 
 def search_transactions_by_amount(amount: float) -> list:
