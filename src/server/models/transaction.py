@@ -4,7 +4,7 @@ from datetime import datetime, date
 from enum import Enum
 
 class TransactionType(str, Enum):
-    WITHDRAWAL = "WITHDRAWAL"
+    WITHDRAWA = "WITHDRAW"
     DEPOSIT = "DEPOSIT"
     TRANSFER = "TRANSFER"
     EXTERNAL_PAYMENT = "EXTERNAL_PAYMENT"
@@ -63,11 +63,18 @@ class SanctionsDetails(BaseModel):
     iban: Optional[str]
     entityType: Optional[str]
 
-class Actions(BaseModel):
+class Actions(str, Enum):
     ALLOW="ALLOW"
     FLAG="FLAG"
     BLOCK="BLOCK"
     SUSPEND="SUSPEND"
+
+class NatureValues(str,Enum):
+    AML="AML"
+    FRAUD="FRAUD"
+    CTF="CTF"
+    SCREENING="SCREENING"
+
 
 class Rule(BaseModel):
     ruleInstanceId: str="ruleInstanceId"
@@ -81,13 +88,19 @@ class Rule(BaseModel):
     sanctionsDetails: Optional[List[SanctionsDetails]]
     isOngoingScreeningHit: Optional[bool]
     labels: Optional[List[str]]
-    nature: Optional[str]
+    nature: Optional[NatureValues]
     isShadow: Optional[bool]
 
+class RiskLevel(str,Enum):
+    VERY_HIGH="VERY_HIGH"
+    HIGH="HIGH"
+    MEDIUM="MEDIUM"
+    LOW="LOW"
+    VERY_LOW="VERY_LOW"
 
 class RiskScoreDetails(BaseModel):
-    trsScore: float
-    trsRiskLevel: str
+    trsScore: float=1.1
+    trsRiskLevel: RiskLevel
 
 
 class TransactionResponseDetails(BaseModel):
@@ -95,19 +108,18 @@ class TransactionResponseDetails(BaseModel):
     hitRules: List[Rule]
     status: str
     transactionId: str
-    message: Optional[str]
+    message: Optional[str]="message"
     riskScoreDetails: Optional[RiskScoreDetails]
 
 
 class Transaction(BaseModel):
-    type: str
-    transactionId: Optional[str] = None
-    timestamp: Optional[datetime] = None
+    type: TransactionType
+    transactionId: int 
+    timestamp: datetime
     originUserId: Optional[str] = None
     destinationUserId: Optional[str] = None
     originAmountDetails: AmountDetails
     destinationAmountDetails: AmountDetails
-    description: str
     promotionCodeUsed: Optional[bool] = False
     reference: Optional[str] = None
     originDeviceData: Optional[DeviceData] = None
