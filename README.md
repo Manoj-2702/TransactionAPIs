@@ -1,5 +1,4 @@
-# FlagrightTask
- 
+
 # Transaction Management System
 
 ## Overview
